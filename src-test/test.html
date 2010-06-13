@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<title>timer</title>
+<style type="text/css">
+pre {
+  background-color: #ddd;
+  border-width: 1px;
+  border-color: #ccc #ccc #aaa;
+  border-style: solid;
+  color: #000;
+  padding: .73em;
+}
+</style>
+</head>
+<body>
+<script src="../src/timer.js"></script>
+<script src="res/log.js"></script>
+<script src="res/kaze.js"></script>
+<script src="tests.js"></script>
+<script>
+(function () {
+
+  var pass = [],
+      fail = [],
+      filter = null,
+      loops = null;
+
+  kaze.run(function (n, p, e, l, r) {
+    // display elapsed and average when multiple loops executed
+    if (l > 1) {
+      (p ? log : log.warn)(n, e + "ms", e / l + "avg");
+    }
+
+    // display a summary when no tests remain
+    (p ? pass : fail).push(n);
+    if (!r) {
+      log(pass.length, "passed.", fail.length, "failed.");
+      if (fail.length)
+        for (var i = 0; i < fail.length; i++)
+          log.warn("Failed:", fail[i])
+    }
+
+  }, filter, loops);
+
+})();
+</script>
+</body>
+</html>
