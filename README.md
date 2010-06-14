@@ -11,8 +11,6 @@ Timer's performance can be tuned by flipping a private variable to use setTimeou
 
 [BSD Licensed](http://github.com/mseeley/Timer/tree/master/LICENSE)
 
----
-
 Named callbacks
 ---------------
 
