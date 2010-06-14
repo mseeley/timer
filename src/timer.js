@@ -1,3 +1,8 @@
+/**
+ * Timer - unified timer loops
+ * git://github.com/mseeley/Timer.git
+ * http://github.com/mseeley/Timer/tree/master/LICENSE
+ */
 (function (global) {
 
   var timeout = "Timeout",
@@ -15,7 +20,7 @@
    * @private
    * @method exec
    */
-	function exec (speed) {
+  function exec (speed) {
     var group = timers[speed],
         fns = group.fns,
         count = fns.length,
