@@ -5,7 +5,7 @@ JavaScript performance significantly degrades when multiple high-frequency timer
 
 Timer's performance can be tuned by flipping a private variable to use setTimeout instead of setInterval. Using setTimeout helps reduce interpreter congestion on pages with heavy runtime loads. Using setTimeout and setInterval simultaneously is unsupported.
 
-[GitHub](git://github.com/mseeley/Timer.git)
+Source: git://github.com/mseeley/Timer.git
 
 [Unit tests](http://github.com/mseeley/Timer/blob/master/src-test/tests.js)
 
