@@ -107,8 +107,34 @@
           delegate();
         }
       }, 50);
+    },
+    "set callback with scope": function (del) {
+      var obj = {
+            id: "foo",
+            fn: function (fn, interval, scope) {
+              timer.clear(fn, interval, scope)
+              // Cannot pass arguments to delegate functions :(
+              id = this.id;
+              delegate();
+            }
+          },
+          delegate = del(function () {
+            return id == obj.id;
+          }),
+          id;
+
+      timer.set(obj.fn, 50, obj);
+    },
+    "clear callback with scope": function () {
+      var obj = {
+            fn: function () {}
+          };
+
+      timer.set(obj.fn, 100, obj);
+      return timer.clear(obj.fn, 100, obj);
     }
   };
 
   kaze.tests(defs);
+
 })();

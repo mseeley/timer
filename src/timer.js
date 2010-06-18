@@ -29,47 +29,44 @@
     // Allow exceptions to terminate execution
     while (count--) {
       fn = fns[count];
-      fn(fn, speed);
+      fn[0].call(fn[1], fn[0], speed, fn[1]);
     }
 
     if (method == timeout) {
       group.id = set(speed);
     }
-	}
+  }
 
   /**
    * Locates a function argument within the specified timer group. Uses native
-   * indexOf method when the feature is available. Lazy definition.
+   * indexOf method when the feature is available.
    * @param {Function} fn
    * @param {Number} speed
+   * @param {Object} scope
    * @return {Number} >= 0 if the fn argument was found; -1 otherwise
    * @private
    * @method indexOf
    */
-  function indexOf (fn, speed) {
-    indexOf = [].indexOf ?
-      function (fn, speed) {
-        var group = timers[speed];
-        return group ? group.fns.indexOf(fn) : -1;
-      }:
-      function (fn, speed) {
-        var group = timers[speed],
-            count,
-            fns,
-            idx = -1;
+  function indexOf (fn, speed, scope) {
+    var group = timers[speed],
+        count,
+        fns,
+        idx = -1;
 
-        if (group) {
-          fns = group.fns;
-          count = fns.length;
-          while (count-- && fn !== fns[count]);
+    if (group) {
+      fns = group.fns;
+      count = fns.length;
+
+      while (count--) {
+        if (fns[count][0] == fn && fns[count][1] == scope) {
           idx = count;
+          break;
         }
+      }
+    }
 
-        return idx;
-      };
-
-    return indexOf(fn, speed);
-	}
+    return idx;
+  }
 
   /**
    * Responsible for setting the unified timeout or interval. Lazy initialized
@@ -109,7 +106,7 @@
     group.fns = [];
   }
 
-	/**
+  /**
    * Consolidate high-frequency function execution, executes one or more times
    * each ~200 ms, under a general interface. Order of function registration
    * does not imply order of execution.
@@ -121,15 +118,16 @@
      * Append a function to a timer group.
      * @param {Function} fn
      * @param {Number} speed
+     * @param {Object} scope Optionalx
      * @return {Boolean} true if the function was added, false otherwise
      * @static
      * @method set
      */
-    set: function (fn, speed) {
+    set: function (fn, speed, scope) {
       var result = false,
           group;
 
-      if (speed >= 0 && indexOf(fn, speed) < 0) {
+      if (speed >= 0 && indexOf(fn, speed, scope) < 0) {
         if (!timers[speed]) {
           timers[speed] = { id:null, fns:[] };
         }
@@ -140,7 +138,7 @@
           group.id = set(speed);
         }
 
-        group.fns.push(fn);
+        group.fns.push([fn, scope]);
         result = !result;
       }
 
@@ -152,12 +150,13 @@
     * stopped when the group is empty.
     * @param {Function} fn
     * @param {Number} speed
+    * @param {Object} scope Required only if fn was set with a scope argument
     * @return {Boolean} true if the function was cleared, false otherwise
     * @static
     * @method clear
     */
-    clear: function (fn, speed) {
-      var idx = indexOf(fn, speed),
+    clear: function (fn, speed, scope) {
+      var idx = indexOf(fn, speed, scope),
           result = false,
           group;
 
