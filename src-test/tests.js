@@ -94,20 +94,44 @@
       setTimeout(delegate, 300);
     },
 
-    "anonymous timer clears itself": function (del) {
-      var startTime = +new Date,
-          result = false,
+    "clear all of a single timer interval": function (del) {
+      var count = 0,
+          fnA = function () {
+            count++;
+          },
+          fnB = function () {
+            count++;
+          },
+          fnC = function () {
+            count++;
+          },
           delegate = del(function () {
-            return result;
+            return count === 0;
           });
 
-      timer.set(function (fn, interval) {
-        if (+new Date - startTime > 250) {
-          result = timer.clear(fn, interval);
-          delegate();
-        }
-      }, 50);
+      timer.set(fnA, 10);
+      timer.set(fnB, 10);
+      timer.set(fnC, 10);
+      timer.clearAll(10);
+
+      setTimeout(delegate, 100);
     },
+
+    "pass arguments to timer": function (del) {
+
+      var result = false,
+          delegate = del(function () {
+            return result;
+          }),
+          fn = function (a, b, c) {
+            timer.clear(fn, 50, null);
+            result = (a == 1 && b == 2 && c == 3);
+            delegate();
+          };
+
+      timer.set(fn, 50, null, 1, 2, 3);
+    },
+
     "set callback with scope": function (del) {
       var obj = {
             id: "foo",
@@ -125,6 +149,7 @@
 
       timer.set(obj.fn, 50, obj);
     },
+
     "clear callback with scope": function () {
       var obj = {
             fn: function () {}

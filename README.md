@@ -1,24 +1,28 @@
-Timer - unified timer loops
-============================
+Timer - unified interval based callback execution
+=================================================
+
+    timer
+        void    set(Function fn, Number interval[, Object scope, Mixed arg1, ..., Mixed argN])
+        void    clear(Function fn, Number interval[, Object scope])
+        void    clearAll([Number interval])
 
 JavaScript performance significantly degrades when multiple high-frequency timers (<= 200ms) are executing simultaneously. Timer uses a single interval or timeout to execute one or more functions. This approach is particularly useful when building animation utilities or in-page monitoring services.  Timer has no library dependencies, values a shallow callstack, and delivers a low file -- less than 500 bytes minified and gzipped.
 
-Timer's performance can be tuned by flipping a private variable to use setTimeout instead of setInterval. Using setTimeout helps reduce interpreter congestion on pages with heavy runtime loads. Using setTimeout and setInterval simultaneously is unsupported.
+Performance can be tuned by flipping a private variable to use setTimeout instead of setInterval. Using setTimeout helps reduce interpreter congestion. Mixing setTimeout and setInterval usage, or switching at runtime, is unsupported.
 
-Source: git://github.com/mseeley/Timer.git
+Git: git://github.com/mseeley/Timer.git
 
 [Unit tests](http://github.com/mseeley/Timer/blob/master/src-test/tests.js)
 
 [BSD Licensed](http://github.com/mseeley/Timer/tree/master/LICENSE)
 
-Named callbacks
----------------
+Usage
+-----
 
-The following example illustrates two timers running at an interval of 100 msec.
-Only one setInterval timer is created by the browser.
+The following example illustrates two callbacks running at an interval of 100 msec. Behind the scenes only one call to setInterval or setTimeout is made.
 
-    // monitorFontSize() is an example of a long running timer
-    var originalFontSize = 11;
+    var originalFontSize = parseInt(myEl.style.fontSize, 10);
+
     function monitorFontSize () {
       var fontSize = parseInt(myEl.style.fontSize, 10);
       if (fontSize != originalFontSize) {
@@ -26,41 +30,26 @@ Only one setInterval timer is created by the browser.
         // further code omitted
       }
     }
+
+    // Execute the callback at 100 msec intervals, minimum required arguments
     timer.set(monitorFontSize, 100);
 
-    // Sometime later another function needs to execute at the same interval
-    var number = 0;
-    function progressBar () {
-      number += 2.5;
-      if (number == 100) {
-        // Clear using the original function reference and speed value
-        timer.clear(progressBar, 100);
+    var progressBar = {
+      value: 0,
+      update: function (toValue) {
+        if (this.value++ === toValue) {
+          // Clear using the values provided to set(); optional arguments may
+          // be omitted.
+          timer.clear(this.progressBar, 100, this);
+        }
       }
-    }
-    timer.set(progressBar, 100);
+    };
 
-Anonymous callbacks
--------------------
+    // Execute scoped callback function, pass optional argument
+    timer.set(progressBar.update, 100, progressBar, 100);
 
-Functions are supplied two arguments; a reference to the executing function and
-the interval the function is executing. These arguments make it possible for
-an anonymous function to clear itself.
-
-    var startTime = +new Date;
-    timer.set(function (fn, interval) {
-      if (+new Date - startTime > 4000) {
-        timer.clear(fn, interval);
-      }
-    }, 100);
-
-Cleaning up
------------
-
-Timers should be cleared whenever they are no longer necessary. All timers can
-be cleared in a single function call; useful to tidy up before unloading the
-page.
-
-    window.addEventListener("unload", timer.clearAll);
+    // All timers can be cleared in a single function call
+    window.addEventListener("unload", timer.clearAll, false);
 
 ---
 
